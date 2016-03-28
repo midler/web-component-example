@@ -1,0 +1,81 @@
+<template id="tpl">
+  <style media="screen">
+    :host {
+      border: 3px solid tomato
+    }
+
+    :host-context(.block2){
+      background: red;
+      color: green;
+    }
+
+    :host-context(.block){
+      background: #D2D2D2;
+      padding: 10px;
+    }
+
+    p {
+      color: tomato;
+    }
+    img{
+      display: block;
+    }
+  </style>
+  <p>
+    Хьюстон, мы внутри!
+  </p>
+  <img src="" alt="" />
+  <p>А он нам отвечает: -"<content select=".first"></content>"</p>
+  <p>
+    <content select=".second"></content>
+  </p>
+</template>
+
+<template id="new-template">
+   <p>
+     А я новый шаблон
+   </p>
+   <button type="button" name="button">ddd</button>
+</template>
+<script type="text/javascript">
+  var owner = document.currentScript.ownerDocument;
+
+  var tmpl = owner.querySelector('#tpl');
+  var block = document.querySelector('.block');
+  var rootHost = block.createShadowRoot();
+  tmpl.content.querySelector('img').src = 'http://placehold.it/100x100';
+  rootHost.appendChild(owner.importNode(tmpl.content, true));
+
+  var newTmpl = owner.querySelector("#new-template");
+  var blockFabric = Object.create(HTMLElement.prototype);
+  blockFabric.createdCallback = function() {
+    var blockFabricRoot = this.createShadowRoot();
+    blockFabricRoot.appendChild(owner.importNode(newTmpl.content, true));
+  };
+  blockFabric.attachedCallback = function() {
+    console.log(this , ' родился!');
+    this.setAttribute('ss', 'true')
+    this.setAttribute('ss', 'false');
+    this.remove();
+
+  };
+  blockFabric.detachedCallback = function() {
+    console.log(this , ' умер!');
+  };
+
+  blockFabric.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      console.log('аттрибут',attrName, 'поменялся')
+  }
+
+  var block = owner.registerElement("my-block", {
+    prototype: blockFabric
+  });
+
+  var MyButton = owner.registerElement("my-button", {
+    extends: "button",
+    prototype: Object.create(HTMLButtonElement.prototype)
+  });
+
+  // owner.createElement("my-block") // OR
+  // new block()
+</script>
